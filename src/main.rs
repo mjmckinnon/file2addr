@@ -20,7 +20,16 @@ use std::error::Error;
 fn str2address(s: &String) -> Address {
 	// Init our Sha256 hasher
 	let mut hasher = Sha256::new();
-	hasher.input_str(&s);
+	// If this String looks like it's Hex and in length 64 then hash as if it were binary data instead
+	if s.len() == 64 {
+		let h: Vec<u8> = match hex::decode(&s) {
+			Ok(result) => result,
+			Err(e) => panic!("{}", e)
+		};
+		hasher.input(&h)
+	} else {
+		hasher.input_str(&s)
+	};
 	let mut newhash: [u8; 32] = [0; 32];
 	hasher.result(&mut newhash);
 	let secp = Secp256k1::new();
